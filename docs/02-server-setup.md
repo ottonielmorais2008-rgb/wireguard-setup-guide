@@ -4,15 +4,20 @@
 
 ```bash
 sudo apt update
-sudo apt install -y wireguard
+sudo apt install -y wireguard iptables
 ```
+
+`iptables` is listed because the `PostUp`/`PostDown` NAT rules below call it. On Ubuntu 24.04, `apt install wireguard` pulls in `nftables` but not `iptables`, so on minimal images without `iptables`, `wg-quick up` fails with `iptables: command not found`.
 
 ## 2.2 Generate the server keys
 
 ```bash
 umask 077
 wg genkey | sudo tee /etc/wireguard/server.key | wg pubkey | sudo tee /etc/wireguard/server.pub
+sudo chmod 600 /etc/wireguard/server.key
 ```
+
+`umask 077` does not carry over to files written with `sudo tee` (on Ubuntu, PAM resets the umask to `022`), so `server.key` would otherwise be created as `644`. The `chmod` fixes that.
 
 `server.key` is secret. `server.pub` is shared with clients.
 
@@ -57,6 +62,8 @@ sudo ufw allow 51820/udp
 sudo ufw allow OpenSSH
 sudo ufw enable
 ```
+
+The `OpenSSH` profile exists only when `openssh-server` is installed. If `ufw` says it cannot find the profile, use `sudo ufw allow 22/tcp` instead.
 
 If UFW is active and you use full-tunnel mode, also allow forwarding by setting `DEFAULT_FORWARD_POLICY="ACCEPT"` in `/etc/default/ufw` and running `sudo ufw reload`.
 
