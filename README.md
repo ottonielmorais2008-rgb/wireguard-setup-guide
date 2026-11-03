@@ -29,17 +29,20 @@ flowchart LR
 ## Quick start (server)
 
 ```bash
-sudo apt update && sudo apt install -y wireguard
+sudo apt update && sudo apt install -y wireguard iptables
 umask 077
 wg genkey | sudo tee /etc/wireguard/server.key | wg pubkey | sudo tee /etc/wireguard/server.pub
+sudo chmod 600 /etc/wireguard/server.key
 ```
 
 Then follow [Server setup](docs/02-server-setup.md) to write `/etc/wireguard/wg0.conf` and start the service.
 
 ## Tested on
 
-- Ubuntu Server 22.04 LTS and 24.04 LTS
-- WireGuard clients for Linux (`wireguard-tools`) and Windows (official app)
+Tested on 2026-11-03 with **Ubuntu 24.04.5 LTS userspace** (the official `ubuntu-base` image) in two chroots, each in its own Linux network namespace (one server, one client), on a Linux 6.12 host with the in-kernel WireGuard module. This was **not a full VM or a real cloud server**.
+
+- Worked: install, key generation, `wg0.conf`, `wg-quick up/down`, IP forwarding, NAT (`MASQUERADE`), ping across the tunnel, full-tunnel traffic through the server, `wg set` to add and remove peers.
+- Not tested: `systemctl` / `journalctl` (no systemd in a chroot; `wg-quick@wg0` runs the same `wg-quick up wg0`), UFW (the test host kernel lacks the `LOG`/`limit` modules UFW needs), the `DNS` line (no `systemd-resolved`), `curl ifconfig.me`, Ubuntu 22.04, and the Windows client.
 
 ## Contributing
 
