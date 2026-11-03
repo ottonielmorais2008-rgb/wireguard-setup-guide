@@ -13,6 +13,8 @@ On Windows, the WireGuard app generates the keys for you: **Add Tunnel > Add emp
 
 ## 3.2 Client config
 
+Save this as `client1.conf` (keep it private, it contains the client's private key):
+
 ```ini
 [Interface]
 PrivateKey = <contents of client1.key>
@@ -54,6 +56,8 @@ sudo apt install -y wireguard
 sudo cp client1.conf /etc/wireguard/wg0.conf
 sudo wg-quick up wg0
 ```
+
+The `DNS` line needs a `resolvconf` command. Ubuntu 24.04 provides one through `systemd-resolved`. Ubuntu 22.04 does not, and `wg-quick up` fails with `resolvconf: command not found`; fix it with `sudo ln -s /usr/bin/resolvectl /usr/local/bin/resolvconf` (or remove the `DNS` line).
 
 **Windows**: open the WireGuard app, **Import tunnel(s) from file**, select the `.conf` file and click **Activate**.
 
